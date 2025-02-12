@@ -2,10 +2,7 @@ package com.infernodb.server.utils;
 
 import com.infernodb.server.http.HttpStatus;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -97,7 +94,7 @@ public interface JsonParser {
         var jsonList = fromMultipleKeyValueJson(json);
 
         // Parse each JSON object
-        var kvMap = new HashMap<String, String>();
+        var kvMap = new LinkedHashMap<String,String>();
         for (var jsonObject : jsonList) {
             var entry = fromKeyValueJson(jsonObject);
             kvMap.put(entry.getKey(), entry.getValue());

@@ -30,7 +30,7 @@ public class KVBucket {
     private final Object wLock = new Object();
     private final KVCompactor compactor;
     private final int compactionThreshold;
-    private final  long blockSize;
+    private final long blockSize;
 
     public KVBucket(Path path) throws IOException {
         this(path, ConfigProperties.getInstance().maxFileSize()); //1MB block size and 2 blocks for compaction
@@ -299,7 +299,16 @@ public class KVBucket {
             return Collections.emptyMap();
         }
         var entries = getRange(startKeyEntry, endKeyEntry);
-        return KVUtils.toKeyValueMap(entries);
+        /*var keyValueList = new ArrayList<Map.Entry<String, String>>();
+        for (var entry : entries) {
+            keyValueList.add(Map.entry(new String(entry.key()), new String(entry.value())));
+        }*/
+        var keyValueMap = new LinkedHashMap<String, String>();
+        for (var entry : entries) {
+            keyValueMap.put(new String(entry.key()), new String(entry.value()));
+        }
+
+        return keyValueMap; //KVUtils.toKeyValueMap(entries);
     }
 
     /**
@@ -310,17 +319,11 @@ public class KVBucket {
      * @return the key-value pairs
      * @throws IOException if an I/O error occurs
      */
-    private Set<KVEntry> getRange(Map.Entry<KeyDirEntry, KVBlock> startKeyEntry, Map.Entry<KeyDirEntry, KVBlock> endKeyEntry) throws IOException {
-        var entries = new TreeSet<KVEntry>((e1, e2) -> {
-            if (e1.timestamp() == e2.timestamp()) {
-                return 0;
-            }
-            return e1.timestamp() < e2.timestamp() ? -1 : 1;
-        });
-        if (startKeyEntry != null && (startKeyEntry == endKeyEntry || startKeyEntry.getValue() == endKeyEntry.getValue())) {
-            var entryList = startKeyEntry.getValue().get(startKeyEntry.getKey(), endKeyEntry.getKey());
-            entries.addAll(entryList);
+    private List<KVEntry> getRange(Map.Entry<KeyDirEntry, KVBlock> startKeyEntry, Map.Entry<KeyDirEntry, KVBlock> endKeyEntry) throws IOException {
+        if (startKeyEntry != null && endKeyEntry != null && (startKeyEntry == endKeyEntry || startKeyEntry.getValue() == endKeyEntry.getValue())) {
+            return startKeyEntry.getValue().get(startKeyEntry.getKey(), endKeyEntry.getKey());
         } else {
+            var entries = new ArrayList<KVEntry>();
             // get all entries between startEntry and endEntry
             if (startKeyEntry != null) {
                 var startEntries = startKeyEntry.getValue().get(startKeyEntry.getKey(), null);
@@ -330,8 +333,8 @@ public class KVBucket {
                 var endEntries = endKeyEntry.getValue().get(null, endKeyEntry.getKey());
                 entries.addAll(endEntries);
             }
+            return entries;
         }
-        return entries;
     }
 
     /**

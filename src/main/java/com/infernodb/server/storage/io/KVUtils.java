@@ -12,25 +12,6 @@ import java.util.logging.Logger;
 public interface KVUtils {
     Logger LOGGER = Logger.getLogger(KVUtils.class.getName());
 
-    /**
-     * Converts a set of key-value entries to a key-value map.
-     *
-     * @param kvEntries a set of key-value entries
-     * @return a key-value map
-     */
-    static Map<String, String> toKeyValueMap(Set<KVEntry> kvEntries) {
-        var kvEntryMap = new LinkedHashMap<String, KVEntry>();
-        for (var kvEntry : kvEntries) {
-            var key = new String(kvEntry.key());
-            kvEntryMap.compute(key, (k, v) -> (v != null && v.timestamp() > kvEntry.timestamp()) ? v : kvEntry);
-        }
-        // Extract values from MapEntry objects
-        var keyValueMap = new LinkedHashMap<String, String>();
-        for (var entry : kvEntryMap.entrySet()) {
-            keyValueMap.put(entry.getKey(), new String(entry.getValue().value()));
-        }
-        return keyValueMap;
-    }
 
     /**
      * Converts a block id to a block id.
