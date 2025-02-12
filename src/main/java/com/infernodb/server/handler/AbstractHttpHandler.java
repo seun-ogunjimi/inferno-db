@@ -68,6 +68,7 @@ public abstract class AbstractHttpHandler implements HttpHandler {
             throw new HttpResponseException(HttpStatus.METHOD_NOT_ALLOWED);
         }
         var pathParams = getPathParams(endpointMatcher);
+        validate(exchange, pathParams);
         // Handle the request based on the method
         return switch (httpMethod) {
             case HttpMethod.GET -> handleGet(exchange, pathParams);
@@ -92,12 +93,16 @@ public abstract class AbstractHttpHandler implements HttpHandler {
      * @param matcher the matcher object
      * @return a map of path parameters
      */
-    private Map<String, String> getPathParams(Matcher matcher) {
+    protected Map<String, String> getPathParams(Matcher matcher) {
         var params = new HashMap<String, String>();
         for (var name : urlPattern.namedGroups().keySet()) {
             params.put(name, matcher.group(name));
         }
         return params;
+    }
+
+    protected void validate(HttpExchange exchange , Map<String, String> pathParams) throws HttpResponseException {
+        // Validate the request
     }
 
     /**

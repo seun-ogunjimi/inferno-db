@@ -10,9 +10,11 @@ import com.infernodb.server.utils.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -99,6 +101,7 @@ public class KVStoreHttpHandler extends AbstractHttpHandler {
 
     private static final Logger LOGGER = Logger.getLogger(KVStoreHttpHandler.class.getName());
     private final KVStore kvStore;
+    private final Pattern paramPattern = Pattern.compile("^[a-zA-Z0-9_-]+$");
 
     /**
      * Create a new handler for the specified KV store.
@@ -129,6 +132,13 @@ public class KVStoreHttpHandler extends AbstractHttpHandler {
             bucket = kvStore.createBucket(bucketName);
         }
         return bucket;
+    }
+
+    protected void validate(HttpExchange exchange , Map<String, String> pathParams) throws HttpResponseException {
+       var bucket = pathParams.get(BUCKET_PARAM);
+        if (bucket!=null && !paramPattern.matcher(bucket).matches()) {
+            throw new HttpResponseException(HttpStatus.BAD_REQUEST, "Invalid bucket name");
+        }
     }
 
     //*********************CODE_SNIPPET_FOR_ENDPOINTS************************

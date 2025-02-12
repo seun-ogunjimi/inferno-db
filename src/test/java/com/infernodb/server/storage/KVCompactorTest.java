@@ -54,8 +54,6 @@ class KVCompactorTest {
         try (var reader = new KVFileReader(compactedBlock.getPath())) {
             var kvEntries = reader.readAllKVEntry(0, -1);
             assertEquals(2, kvEntries.size());
-            System.out.println(new String(kvEntries.get(0).key()));
-            System.out.println(new String(kvEntries.get(1).key()));
             assertEquals("key1", new String(kvEntries.get(0).key()));
             assertEquals("value1", new String(kvEntries.get(0).value()));
             assertEquals("key2", new String(kvEntries.get(1).key()));

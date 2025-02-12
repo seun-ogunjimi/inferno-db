@@ -144,6 +144,7 @@ public interface HttpUtils {
             }
             throw new HttpResponseException(responseEntity);
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Http Handler: %s".formatted(e.getMessage()));
             Optional.ofNullable(onerror)
                     .orElse(ex -> LOGGER.log(Level.SEVERE, "Error in Http Handler: %s".formatted(ex.getMessage()), ex))
                     .accept(e instanceof HttpResponseException ex ? ex : new HttpResponseException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));

@@ -50,10 +50,17 @@ performance.
     ```sh
     java -jar target/inferno-db-1.0.0.jar --server-port=9090 --max-file-size=1024 --max-memory-size=1024 --compaction-threshold=2
     ```
-    - `server-port` - The port on which the server will run. Default is 9090.
-    - `max-file-size` - The maximum size of a file before a rollover. Default is 10,485,760 bytes. (10M)
-    - `max-memory-size` - The maximum size of the in-memory buffer per write/read. Default is 1024 bytes. (1KB)
-    - `compaction-threshold` - The number of files(max-file-size) after which a compaction will be triggered. Default is
+    - The above command will start the server on port 9090 with a max file size of 1KB, max memory size of 1KB, and a
+      compaction threshold of 2.
+
+### Configuration
+
+Inferno DB can be configured using commandline variables. The following variables are available:
+
+- `server-port` - The port on which the server will run. Default is 9090.
+- `max-file-size` - The maximum size of a file before a rollover. Default is 10,485,760 bytes. (10M)
+- `max-memory-size` - The maximum size of the in-memory buffer per write/read. Default is 1024 bytes. (1KB)
+- `compaction-threshold` - The number of files(max-file-size) after which a compaction will be triggered. Default is 2
 
 ## Usage
 
@@ -69,9 +76,7 @@ java -jar target/inferno-db-1.0.0.jar
 ### REST API
 
 Inferno DB provides a REST API for interacting with the database. The following endpoints are available:
-Base URL: `http://localhost:9090`
-Default port is 9090, you can change the port by passing the `server-port` commandline variable.
-Defaut bucket is `root`, you can create a new bucket by passing the `bucket` path parameter.
+>>> Base URL: `http://localhost:9090`
 
 - `GET /inferno/{bucket}/{key}` - Get the value for the specified key
   Response:
@@ -133,19 +138,36 @@ Defaut bucket is `root`, you can create a new bucket by passing the `bucket` pat
     ```
   Response: 200 OK
 
-### Configuration
+- ERROR RESPONSES
+  - 400 Bad Request - Invalid request
+  - 404 Not Found - Key not found
+  - 500 Internal Server Error - Server error
+  Response:
+  ```json
+      {
+        "timestamp": "1739382788546",
+        "status": "404",
+        "message": "Key not found"
+      }
+    ```
+- Example:
+  ```sh
+  curl -X PUT http://localhost:9090/inferno/root/hello -d '{"key": "hello", "value": "Hello, World!"}'
+  ```
 
-Inferno DB can be configured using commandline variables. The following variables are available:
+>>>NOTE: Always ensure that you have a well-formed JSON body when making requests to the API. I wrote a custom JSON parser, so it is very strict and may not do well with special characters or invalid JSON.
 
-- `server-port` - The port on which the server will run. Default is 9090.
-- `max-file-size` - The maximum size of a file before a rollover. Default is 10,485,760 bytes. (10M)
-- `max-memory-size` - The maximum size of the in-memory buffer per write/read. Default is 1024 bytes. (1KB)
-- `compaction-threshold` - The number of files(max-file-size) after which a compaction will be triggered. Default is 2
-- `bucket` - The bucket to use. Default is `root`
 
-### Design
+#### About Buckets
+- Default bucket is `root`, you can create a new bucket by passing the `bucket` path parameter.
+- `{bucket}` is the name of the bucket you want to interact with. It is optional and defaults to `root`.
+- If you want to interact with the default bucket, you can omit the `{bucket}` path parameter.
+- If specified, the `{bucket}` path parameter must be alphanumeric and can contain hyphens.
+- It is case-insensitive and must be URL encoded.
+- It is created if it does not exist.
 
-### Used: Language and Framework
+
+### Used: Language
 
 1. Java
 2. Maven
@@ -162,7 +184,7 @@ Inferno DB can be configured using commandline variables. The following variable
 - [ ] Add support for data sharding
 - [ ] Add support for high availability and fault tolerance (using Raft consensus algorithm)
 - [ ] Add support for data querying pagination
--
+
 
 ### License
 
